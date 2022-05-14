@@ -7,34 +7,34 @@ SIZE = 4
 def display_start_screen():
   pygame.display.set_caption("2048 START")
   global start_button
-  background = pygame.image.load("C:/Users/hth09/OneDrive/바탕 화면/desktop/2048/start_screen.jpg")
+  background = pygame.image.load("start_screen.jpg")
   screen.blit(background, (0,0))
   start_button = pygame.Rect(150, 550, 250 , 100)#종료 버튼
 
 def display_game_screen():
   pygame.display.set_caption("2048")
   global option_button
-  background = pygame.image.load("C:/Users/hth09/OneDrive/바탕 화면/desktop/2048/main.jpg")
+  background = pygame.image.load("main.jpg")
   screen.blit(background, (0,0))
   option_button = pygame.Rect(460, 130, 50 , 50)
 
 def display_option_screen():
   pygame.display.set_caption("2048 OPTION")
   global quit_button
-  background = pygame.image.load("C:/Users/hth09/OneDrive/바탕 화면/desktop/2048/background.png")
+  background = pygame.image.load("background.png")
   screen.blit(background, (0,0))
 
   option_font = pygame.font.Font(None, 100)#상단option글씨
   option = option_font.render("OPTION", True, (137, 114, 84))
   screen.blit(option, (PIXEL, SCORE_PIXEL // 2))
 
-  bgm_emoji = pygame.image.load("C:/Users/hth09/OneDrive/바탕 화면/desktop/2048/sound.png")#왼쪽 배경음 버튼
+  bgm_emoji = pygame.image.load("sound.png")#왼쪽 배경음 버튼
   bgm_button = pygame.Rect(PIXEL , PIXEL * 2 - 50, PIXEL //3 * 2 , PIXEL // 3 * 2)
   pygame.draw.rect(screen,(137, 114, 84), bgm_button,45,15)
   screen.blit(bgm_emoji, (PIXEL + 10, PIXEL * 2 -40))
 
 
-  sound_emoji = pygame.image.load("C:/Users/hth09/OneDrive/바탕 화면/desktop/2048/sound2.png")#오른쪽 효과음 버튼
+  sound_emoji = pygame.image.load("sound2.png")#오른쪽 효과음 버튼
   sound_button = pygame.Rect(PIXEL + PIXEL // 3 * 4, PIXEL * 2 - 50, PIXEL //3 * 2 , PIXEL // 3 * 2)
   pygame.draw.rect(screen,(137, 114, 84), sound_button,45,15)
   screen.blit(sound_emoji, (PIXEL + PIXEL // 3 * 4 + 10, PIXEL * 2 - 40))
