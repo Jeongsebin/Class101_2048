@@ -39,6 +39,34 @@ def display_rank_screen(): # 랭킹화면
   pygame.display.set_caption("2048 RANKING")
   background = pygame.image.load("Ranking.png") # 이미지 로드
   screen.blit(background, (0,0)) # 이미지 적용
+  
+  board = open("ranking.txt", "r")     #순위표 open
+    
+  rankinglist = []     #순위를 담을 리스트 생성, 형식: ['이름', '점수']
+
+  BLACK = (0, 0, 0)
+
+  while True:
+      line = board.readline()     #txt파일에서 한 줄씩 읽어오기
+
+      if not line:     #txt 파일에서 읽어올 것이 없어, line이 비었다면, 중단
+          break
+
+      line = line.split()     #['이름 점수'] 형태를 ['이름', '점수'] 형태로 쪼개기
+      rankinglist.append(line)     #rankinglist에 삽입
+      
+  board.close()     #txt파일 닫기
+  
+  y = 250     #텍스트가 출력될 y좌표, x는 변화가 없으므로 아래 반복문에서는 상수로 직접 입력
+  for i in range(5):     #텍스트 출력
+      myFont = pygame.font.SysFont( "arial", 30, True, False)
+      name = myFont.render(rankinglist[i][0], True, BLACK)
+      score = myFont.render(rankinglist[i][1], True, BLACK)
+
+      screen.blit(name, [210, y])
+      screen.blit(score, [340, y])
+      y += 68
+  
   rank_quit_button = pygame.Rect(387, 660, 132, 42) # rank_quit버튼 위치 설정
 
 def display_option_screen():
