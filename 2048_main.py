@@ -1,5 +1,125 @@
 import random
 import pygame
+import math
+
+class Map:
+  def __init__(self):
+    self.size = 4 # 4X4 형식
+    self.score = 0 # 점수
+    self.map = [[0 for i in range(4)] for i in range(4)] # 맵
+    self.add1() # 초기 두개의 블럭 생성
+    self.add1()
+  
+  def add1(self): # 초기블럭 생성(c 블럭만)
+    while True:
+      px = random.randint(0, 3)
+      py = random.randint(0, 3)
+      if self.map[py][px] == 0:
+        self.map[py][px] = 2
+        break
+  
+  def add(self): # 블럭 생성(c or c++)
+    while True:
+      px = random.randint(0, 3)
+      py = random.randint(0, 3)
+      if self.map[py][px] == 0:
+        x = random.randint(0, 3) > 0 and 2 or 4
+        self.map[py][px] = x
+        break
+  
+  
+  #       ，                 ，        
+  def adjust(self): # 합치기
+    changed = False # 합쳐졌는지 판별
+    for a in self.map:
+      b = []
+      last = 0
+      for v in a:
+        if v != 0:
+          if v == last:
+            b.append(b.pop() << 1)
+            self.score += v * 2 # 합쳐서 만들어진 숫자만큼 점수 추가
+            last = 0
+          else:
+            b.append(v)
+            last = v
+      b += [0] * (self.size - len(b))
+      for i in range(self.size):
+        if a[i] != b[i]:
+          changed = True 
+      a[ : ] = b
+    return changed
+
+  def rotate90(self):
+    self.map = [[self.map[c][r] for c in range(self.size)] for r in reversed(range(self.size))]
+  
+  #       
+  def over(self): # 게임 오버 판별
+    for r in range(self.size):
+      for c in range(self.size):
+        if self.map[r][c] == 0:
+          return False
+    for r in range(self.size):
+      for c in range(self.size - 1):
+        if self.map[r][c] == self.map[r][c + 1]:
+          return False
+    for r in range(self.size - 1):
+      for c in range(self.size):
+        if self.map[r][c] == self.map[r + 1][c]:
+          return False
+    return True
+  
+  def moveLeft(self):
+    self.rotate90()
+    if self.adjust(): #블럭이 합쳐졌다면 블럭 생성
+      self.add()
+    self.rotate90()
+    self.rotate90()
+    self.rotate90()
+  
+  def moveDown(self):
+    self.rotate90()
+    self.rotate90()
+    if self.adjust():
+      self.add()
+    self.rotate90()
+    self.rotate90()
+  
+  def moveRight(self):
+    self.rotate90()
+    self.rotate90()
+    self.rotate90()
+    if self.adjust():
+      self.add()
+    self.rotate90()
+  
+  def moveUp(self):
+    if self.adjust():
+      self.add()
+
+  def create_block(self): #블럭 이미지 띄우기
+    block = [[(37,211),(156,211),(275,211),(394,211)], # 각 블럭이 들어갈 좌표
+    [(37,329),(156,329),(275,329),(394,329)],
+    [(37,447),(156,447),(275,447),(394,447)],
+    [(37,564),(156,564),(275,564),(394,564)] ]
+
+    #블럭 이미지들
+    block_image=["block_c.png", "block_c++.png", "block_c#.png", "block_vs.png", "block_jv.png", "block_js.png", "block_ts.png", "block_s.png", "block_php.png", "block_sql.png", "block_python.png"]#블럭 이미지들을 넣을 리스트
+    b_image = []
+    for i in block_image:
+      b_image.append(pygame.image.load(i))
+
+    count_x = 0 #좌표의 인덱스
+    count_y = 0
+    for a in self.map:
+      for b in a:
+        if b is not 0: # 0 이 아니라면 (2,4,8,16 ... 이라면)
+          screen.blit(b_image[int(math.log2(b)) - 1], block[count_x][count_y]) 
+        count_x += 1
+      count_x = 0
+      count_y += 1
+    count_x = 0
+    count_y = 0
 
 def display_start_screen():#시작화면
   pygame.display.set_caption("2048 START")
@@ -18,21 +138,9 @@ def display_game_screen():#게임메인 화면
   option_button = pygame.Rect(460, 130, 50 , 50) # 각 버튼 위치 설정
   undo_button = pygame.Rect(367, 128, 54, 54)
   score_button = pygame.Rect(355, 74, 53, 29) 
-
-  for i in range(0,4): #블럭들 위치를 행렬로 이차원 리스트에 저장
-    y = 211 + 118 * i
-    for j in range(0,4):
-      x = 37 + 119 * j
-      block[i].append((x,y))
-    block.append([])
-
-def create_block_1(): #블럭 생성
-  b_image.append(pygame.image.load("block_c.png"))# 블럭 이미지 순서대로 리스트에 저장
-  b_image.append(pygame.image.load("block_c++.png"))
-  screen.blit(b_image[0], block[loc_y[0]][loc_x[0]]) # random한 위치 두 곳에 블럭 이미지 생성
-  screen.blit(b_image[0], block[loc_y[1]][loc_x[1]])
-  if loc_x[0] == loc_x[1] and loc_y[0] == loc_y[1]: # 두 위치가 겹친다면 다음 단계 블럭으로 생성
-    screen.blit(b_image[1], block[loc_y[0]][loc_x[0]])
+  score_font = pygame.font.Font(None, 30)
+  score = score_font.render(str(map.score), True, (0,0,0))
+  screen.blit(score, (378, 85))
 
 def display_rank_screen(): # 랭킹화면
   global rank_quit_button # 랭킹화면에서 나가는 버튼
@@ -69,6 +177,27 @@ def display_rank_screen(): # 랭킹화면
   
   rank_quit_button = pygame.Rect(387, 660, 132, 42) # rank_quit버튼 위치 설정
 
+def display_game_over():
+  pygame.display.set_caption("GAME OVER")
+  global click_button 
+  background = pygame.image.load("game_over.png") # 게임오버 배경이미지 로드
+  screen.blit(background, (0,0)) # 게임오버 배경 이미지 적용
+  score_font = pygame.font.Font(None, 140)
+  score = score_font.render(str(map.score), True, (0,0,0))
+  screen.blit(score, (200, 300))
+
+  click_button = pygame.Rect(358,635,155,63)
+
+def display_clear_screen():
+  pygame.display.set_caption("CLEAR!")
+  global clear_button
+  background = pygame.image.load("clear.png") # 옵션 배경이미지 로드
+  screen.blit(background, (0,0)) # 옵션 배경 이미지 적용
+
+  clear_button = pygame.Rect(420,680,105,30)
+
+
+
 def display_option_screen():
   pygame.display.set_caption("2048 OPTION")
   global option_quit_button # 옵션 내부 버튼들 전역 선언
@@ -83,23 +212,12 @@ def display_option_screen():
   restart_button = pygame.Rect(130, 404, 280, 93)#restart버튼
   option_quit_button = pygame.Rect(130, 541, 280, 93)# 옵션 종료 버튼
 
+pygame.mixer.pre_init()  
 pygame.init()
-block = [] # 블럭의 좌표를 위한 2차원 리스트 선언
-block.append([])
-
-loc_x = [] # 블럭의 x,y좌표가 들어가는 리스트를 각각 선언,  이후 난수를 두개 넣어놓음(시작시 2개의 블럭 생성을 위해)
-loc_x.append(random.randrange(0,4))
-loc_x.append(random.randrange(0,4))
-loc_y = []
-loc_y.append(random.randrange(0,4))
-loc_y.append(random.randrange(0,4))
-
-while loc_x[0] == loc_x[1] and loc_y[0] == loc_y[1]:# 만약 초기 생성 블럭 두개의 위치가 같다면 한 블럭을 다시 생성
-  loc_x[1] = random.randrange(0,4)
-  loc_y[1] = random.randrange(0,4)
-
-b_image=[]#블럭 이미지들을 넣을 리스트
-
+bgm = pygame.mixer.Sound("bgm.wav")
+button_sound = pygame.mixer.Sound("button_se.wav")
+move = pygame.mixer.Sound("action_Se.wav")
+bgm.play(-1)
 screen_width = 540 # 스크린 화면 크기 (540 X 725)
 screen_height = 725
 
@@ -111,9 +229,10 @@ start = False # 시작화면 트리거
 running = True 
 option = False # 옵션화면 트리거
 rank = False # 랭킹화면 트리거
+bsound = True
 while running:
   click_pos = None # 클릭 좌표
-  clock.tick(20)# 속도 조절
+  clock.tick(10)# 속도 조절
 
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
@@ -121,16 +240,38 @@ while running:
     elif event.type == pygame.MOUSEBUTTONUP: # 마우스 버튼 클릭하면
       click_pos = pygame.mouse.get_pos() # 마우스 좌표를 click_pos에 저장
 
+
   if click_pos:
     if start_button.collidepoint(click_pos): # 시작 버튼을 누르면 start를 True로
+      button_sound.play()
+      if start is False:
+        map = Map()
       start = True
+      
   
   if start: # 게임이 시작되면
     if option: # 옵션화면 일때
       display_option_screen()
 
+      if click_pos:
+        if bgm_button.collidepoint(click_pos):
+          button_sound.play()
+          if bsound:
+            bgm.stop()
+            bsound = False
+          else:
+            bgm.play(-1)
+            bsound = True
+
       if click_pos: # 옵션 화면에서 옵션 quit버튼을 누르면 옵션을 False로
         if option_quit_button.collidepoint(click_pos):
+          button_sound.play()
+          option = False
+
+      if click_pos: # 옵션 화면에서 옵션 quit버튼을 누르면 옵션을 False로
+        if restart_button.collidepoint(click_pos):
+          button_sound.play()
+          map = Map()
           option = False
 
     elif rank: # 확인을 위한 부분 (무시해주세요)
@@ -138,37 +279,57 @@ while running:
 
         if click_pos:
           if rank_quit_button.collidepoint(click_pos):
+            button_sound.play()
             rank = False
 
     else: # 옵션 화면이 아니라면 게임 화면
       display_game_screen()
-      create_block_1() # 블럭 두개 생성
+      map.create_block() # 블럭 두개 생성
       if event.type == pygame.KEYDOWN: # 키보드를 눌렀을 때
+        move.play()
         if event.key == pygame.K_UP: # up이면
-          for i in range(len(loc_x)): # 블럭의 개수만큼 반복하여 모든 블럭의 y좌표를 위로 이동
-            while loc_y[i] != 0: # 벽을 만날때 까지 이동
-              loc_y[i] -= 1 
-              
+          map.moveUp()
 
         elif event.key == pygame.K_DOWN: # down이면
-          for i in range(len(loc_x)):
-            while loc_y[i] != 3:
-              loc_y[i] += 1          
+          map.moveDown()         
 
         elif event.key == pygame.K_LEFT: # left로 이동 이면
-          for i in range(len(loc_x)):
-            while loc_x[i] != 0:
-              loc_x[i] -= 1          
+          map.moveLeft()         
 
         elif event.key == pygame.K_RIGHT: #right로 이동이면
-          for i in range(len(loc_x)):
-            while loc_x[i] != 3:
-              loc_x[i] += 1        
+          map.moveRight()  
+          
+
+      for i in map.map:
+        for j in i:
+          if j == 2048:
+            display_clear_screen()
+            
+            if click_pos:
+              if clear_button.collidepoint(click_pos): # 시작 버튼을 누르면 start를 True로
+                button_sound.play()
+                start = False
+
+
+
+
+      if map.over():
+        display_game_over()
+      
+        
+        if click_pos:
+          if click_button.collidepoint(click_pos): # 시작 버튼을 누르면 start를 True로
+            button_sound.play()
+            start = False
+
+
     
       if click_pos: # 마우스를 클릭했을때
           if option_button.collidepoint(click_pos): # 옵션버튼을 누르면 옵션을 True로
+            button_sound.play()
             option = True
           elif score_button.collidepoint(click_pos): # 스코어 화면 전환 디버깅을 위한 버튼
+            button_sound.play()
             rank = True
 
   else: # default로 시자화면 출력
