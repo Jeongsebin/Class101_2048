@@ -148,10 +148,10 @@ def display_game_screen():#게임메인 화면
   rankingList = open("ranking.txt", "r")     #순위표 open
   highestscore = rankingList.readline()     #txt파일에서 첫번째 줄(1위의 이름과 점수) 읽어오기
   highestscore = highestscore.split()     #읽어온 이름, 점수를 ['이름', '점수'] 리스트 형식으로 쪼개기
-  myFont = pygame.font.SysFont( "arial", 25, True, False)     #표시할 텍스트의 폰트 설정
-  score = myFont.render(highestscore[1], True, (0, 0, 0))     #screenbilt를 위해 score 변수에 텍스트 표시 관련 설정 할당
+  highscoreFont = pygame.font.Font(None, 30)     #표시할 텍스트의 폰트 설정
+  score = highscoreFont.render(highestscore[1], True, (0, 0, 0))     #screenbilt를 위해 score 변수에 텍스트 표시 관련 설정 할당
   rankingList.close()     #txt파일 닫기
-  screen.blit(score, [443, 75])     #텍스트 표시
+  screen.blit(score, [441, 85])     #텍스트 표시
 
 def display_rank_screen(): # 랭킹화면
   global rank_quit_button # 랭킹화면에서 나가는 버튼
