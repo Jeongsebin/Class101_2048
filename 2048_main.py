@@ -145,6 +145,16 @@ def display_game_screen():#게임메인 화면
   score = score_font.render(str(map.score), True, (0,0,0))
   screen.blit(score, (368, 85))
 
+  rankingList = open("ranking.txt", "r")     #순위표 open
+  highestscore = rankingList.readline()     #txt파일에서 첫번째 줄(1위의 이름과 점수) 읽어오기
+  highestscore = highestscore.split()     #읽어온 이름, 점수를 ['이름', '점수'] 리스트 형식으로 쪼개기
+  highscoreFont = pygame.font.Font(None, 30)     #표시할 텍스트의 폰트 설정
+  score = highscoreFont.render(highestscore[1], True, (0, 0, 0))     #screenbilt를 위해 score 변수에 텍스트 표시 관련 설정 할당
+  rankingList.close()     #txt파일 닫기
+  screen.blit(score, [441, 85])     #텍스트 표시
+
+
+
 def display_rank_screen(): # 랭킹화면
   global rank_quit_button # 랭킹화면에서 나가는 버튼
   global rank_restart_button
@@ -185,7 +195,7 @@ def display_rank_screen(): # 랭킹화면
 def display_game_over():
   pygame.display.set_caption("GAME OVER")
   global click_button 
-  background = pygame.image.load("game_over.jpg") # 게임오버 배경이미지 로드
+  background = pygame.image.load("game_over.png") # 게임오버 배경이미지 로드
   screen.blit(background, (0,0)) # 게임오버 배경 이미지 적용
   score_font = pygame.font.Font(None, 40)
   score = score_font.render(str(map.score), True, (0,0,0))
@@ -216,6 +226,61 @@ def display_option_screen():
   bgm_button = pygame.Rect(316, 216, 94, 94)
   restart_button = pygame.Rect(130, 404, 280, 93)#restart버튼
   option_quit_button = pygame.Rect(130, 541, 280, 93)# 옵션 종료 버튼
+
+
+
+def compare_and_saving_user_score(user_score):
+    user_name = 'Player'
+    board = open("ranking.txt", "r")     #순위표 open
+    rankinglist = []     #순위를 담을 리스트 생성, 형식: ['이름', '점수']
+    comparescore = []     #순위를 담을 리스트 생성, 단 점수만 담는다.
+    changedlist = []     #순위가 변경될 경우 변경된 순위를 담아놓는 리스트. 이를 txt파일에 적용한다
+    while True:
+        text = board.readline()     #txt파일에서 한 줄씩 읽어오기
+        if not text:     #txt 파일에서 읽어올 것이 없어, text가 비었다면, 중단
+            break
+        text = text.split()     #['이름 점수'] 형태를 ['이름', '점수'] 형태로 쪼개기
+        rankinglist.append(text)     #rankinglist에 삽입, 이 리스트는 이름과 점수를 모두 저장한다
+        comparescore.append(text[1])     #comparescore에 삽입, 이 리스트는 점수만을 저장한다
+    
+    
+    board.close()     #txt파일 닫기
+
+    comparescore = [int(i) for i in comparescore]
+
+    rankingchangeKey = False     #만약 유저의 점수가 Top5와 비교해서 순위권 내에 들면 True로 전환
+    user_ranking = 0     #유저의 랭킹을 기록(0 = 1위)
+
+    for i in range(5):     #유저의 순위를 알기 위한 반복문, 순위를 알아냄과 동시에 순위권 내라면 key가 True가 된다
+        if user_score > comparescore[i]:
+            rankingchangeKey = True
+            break
+        user_ranking += 1
+    
+    if rankingchangeKey:
+        board = open("ranking.txt", "w")     #txt파일 오픈
+        for i in range(5):
+            temp = []     #txt파일에 다시 작성해 넣을 이름, 점수를 임시 저장할 리스트
+            if i == user_ranking:     #현재 작성하는 위치가 유저의 순위라면, 유저의 이름과 점수를 기입
+                temp.append(user_name)
+                temp.append(user_score)
+                temp = [str(i) for i in temp]
+                changedtemp = " ".join(temp)
+                board.write(changedtemp + '\n')
+            elif i < user_ranking:     #현재 작성하는 위치가 유저의 순위보다 높다면(1위~유저), 정상적으로 기입
+                for j in range(2):
+                    temp.append(rankinglist[i][j])
+                temp = [str(i) for i in temp]
+                changedtemp = " ".join(temp)
+                board.write(changedtemp + '\n')
+            elif i > user_ranking:     #현재 작성하는 위치가 유저의 순위보다 낮다면(유저~5위), 하나씩 밀어내기를 하며 기입
+                for j in range(2):
+                    temp.append(rankinglist[i - 1][j])
+                temp = [str(i) for i in temp]
+                changedtemp = " ".join(temp)
+                board.write(changedtemp + '\n')     #txt파일 저장
+        
+        board.close()
 
 pygame.mixer.pre_init()  
 pygame.init()
@@ -345,6 +410,7 @@ while running:
 
 
       if map.over():
+        compare_and_saving_user_score(map.score)
         if rank: # 확인을 위한 부분 (무시해주세요)
           display_rank_screen()
 
