@@ -79,6 +79,10 @@ class Map:
     return True
     
   def moveUp(self):
+    self.rotate90()
+    self.rotate90()
+    self.rotate90()
+    self.rotate90()
     if self.adjust():
       self.add()
   
