@@ -7,12 +7,12 @@ class Map:
     self.size = 4 # 4X4 형식
     self.score = 0 # 점수
     self.map = [[0 for i in range(4)] for i in range(4)] # 맵
+    self.post_map = []    #이전의 맵
+    self.post_score = 0   #이전의 점수
     self.add1() # 초기 두개의 블럭 생성
     self.add1()
   
   def add1(self): # 초기블럭 생성(c 블럭만)
-    global scorecompare_key
-    scorecompare_key = True
     while True:
       px = random.randint(0, 3)
       py = random.randint(0, 3)
@@ -57,6 +57,11 @@ class Map:
   def rotate90(self):
     self.map = [[self.map[c][r] for c in range(self.size)] for r in reversed(range(self.size))]
   
+  def undo(self):
+    self.map = self.post_map	  #맵 덮어쓰기
+    self.score = self.post_score  #점수 덮어쓰기
+    self.post_map = []	          #post_map 비우기
+    
   #       
   def over(self): # 게임 오버 판별
     for r in range(self.size):
@@ -74,6 +79,10 @@ class Map:
     return True
     
   def moveUp(self):
+    self.rotate90()
+    self.rotate90()
+    self.rotate90()
+    self.rotate90()
     if self.adjust():
       self.add()
   
@@ -230,63 +239,59 @@ def display_option_screen():
   option_quit_button = pygame.Rect(130, 541, 280, 93)# 옵션 종료 버튼
 
 
-scorecompare_key = False      #점수비교함수 실행에 필요한 key, 이 key를 이용해 점수비교함수가 반복적으로 실행되는 것을 막음
 
 def compare_and_saving_user_score(user_score):
-    global scorecompare_key
-    if scorecompare_key == True:     #점수비교함수 key가 True면, 이후 False로 바꾸어 함수가 한 번만 실행되도록 만든다
-        scorecompare_key = False
-        user_name = 'Player'
-        board = open("ranking.txt", "r")     #순위표 open
-        rankinglist = []     #순위를 담을 리스트 생성, 형식: ['이름', '점수']
-        comparescore = []     #순위를 담을 리스트 생성, 단 점수만 담는다.
-        changedlist = []     #순위가 변경될 경우 변경된 순위를 담아놓는 리스트. 이를 txt파일에 적용한다
-        while True:
-            text = board.readline()     #txt파일에서 한 줄씩 읽어오기
-            if not text:     #txt 파일에서 읽어올 것이 없어, text가 비었다면, 중단
-                break
-            text = text.split()     #['이름 점수'] 형태를 ['이름', '점수'] 형태로 쪼개기
-            rankinglist.append(text)     #rankinglist에 삽입, 이 리스트는 이름과 점수를 모두 저장한다
-            comparescore.append(text[1])     #comparescore에 삽입, 이 리스트는 점수만을 저장한다
+    user_name = 'Player'
+    board = open("ranking.txt", "r")     #순위표 open
+    rankinglist = []     #순위를 담을 리스트 생성, 형식: ['이름', '점수']
+    comparescore = []     #순위를 담을 리스트 생성, 단 점수만 담는다.
+    changedlist = []     #순위가 변경될 경우 변경된 순위를 담아놓는 리스트. 이를 txt파일에 적용한다
+    while True:
+        text = board.readline()     #txt파일에서 한 줄씩 읽어오기
+        if not text:     #txt 파일에서 읽어올 것이 없어, text가 비었다면, 중단
+            break
+        text = text.split()     #['이름 점수'] 형태를 ['이름', '점수'] 형태로 쪼개기
+        rankinglist.append(text)     #rankinglist에 삽입, 이 리스트는 이름과 점수를 모두 저장한다
+        comparescore.append(text[1])     #comparescore에 삽입, 이 리스트는 점수만을 저장한다
     
     
-        board.close()     #txt파일 닫기
+    board.close()     #txt파일 닫기
 
-        comparescore = [int(i) for i in comparescore]
+    comparescore = [int(i) for i in comparescore]
 
-        rankingchangeKey = False     #만약 유저의 점수가 Top5와 비교해서 순위권 내에 들면 True로 전환
-        user_ranking = 0     #유저의 랭킹을 기록(0 = 1위)
+    rankingchangeKey = False     #만약 유저의 점수가 Top5와 비교해서 순위권 내에 들면 True로 전환
+    user_ranking = 0     #유저의 랭킹을 기록(0 = 1위)
 
-        for i in range(5):     #유저의 순위를 알기 위한 반복문, 순위를 알아냄과 동시에 순위권 내라면 key가 True가 된다
-            if user_score > comparescore[i]:
-                rankingchangeKey = True
-                break
-            user_ranking += 1
+    for i in range(5):     #유저의 순위를 알기 위한 반복문, 순위를 알아냄과 동시에 순위권 내라면 key가 True가 된다
+        if user_score > comparescore[i]:
+            rankingchangeKey = True
+            break
+        user_ranking += 1
     
-        if rankingchangeKey:
-            board = open("ranking.txt", "w")     #txt파일 오픈
-            for i in range(5):
-                temp = []     #txt파일에 다시 작성해 넣을 이름, 점수를 임시 저장할 리스트
-                if i == user_ranking:     #현재 작성하는 위치가 유저의 순위라면, 유저의 이름과 점수를 기입
-                    temp.append(user_name)
-                    temp.append(user_score)
-                    temp = [str(i) for i in temp]
-                    changedtemp = " ".join(temp)
-                    board.write(changedtemp + '\n')
-                elif i < user_ranking:     #현재 작성하는 위치가 유저의 순위보다 높다면(1위~유저), 정상적으로 기입
-                    for j in range(2):
-                        temp.append(rankinglist[i][j])
-                    temp = [str(i) for i in temp]
-                    changedtemp = " ".join(temp)
-                    board.write(changedtemp + '\n')
-                elif i > user_ranking:     #현재 작성하는 위치가 유저의 순위보다 낮다면(유저~5위), 하나씩 밀어내기를 하며 기입
-                    for j in range(2):
-                        temp.append(rankinglist[i - 1][j])
-                    temp = [str(i) for i in temp]
-                    changedtemp = " ".join(temp)
-                    board.write(changedtemp + '\n')     #txt파일 저장
+    if rankingchangeKey:
+        board = open("ranking.txt", "w")     #txt파일 오픈
+        for i in range(5):
+            temp = []     #txt파일에 다시 작성해 넣을 이름, 점수를 임시 저장할 리스트
+            if i == user_ranking:     #현재 작성하는 위치가 유저의 순위라면, 유저의 이름과 점수를 기입
+                temp.append(user_name)
+                temp.append(user_score)
+                temp = [str(i) for i in temp]
+                changedtemp = " ".join(temp)
+                board.write(changedtemp + '\n')
+            elif i < user_ranking:     #현재 작성하는 위치가 유저의 순위보다 높다면(1위~유저), 정상적으로 기입
+                for j in range(2):
+                    temp.append(rankinglist[i][j])
+                temp = [str(i) for i in temp]
+                changedtemp = " ".join(temp)
+                board.write(changedtemp + '\n')
+            elif i > user_ranking:     #현재 작성하는 위치가 유저의 순위보다 낮다면(유저~5위), 하나씩 밀어내기를 하며 기입
+                for j in range(2):
+                    temp.append(rankinglist[i - 1][j])
+                temp = [str(i) for i in temp]
+                changedtemp = " ".join(temp)
+                board.write(changedtemp + '\n')     #txt파일 저장
         
-            board.close()
+        board.close()
 
 pygame.mixer.pre_init()  
 pygame.init()
@@ -367,6 +372,7 @@ while running:
       display_game_screen()
       map.create_block() # 블럭 두개 생성
       if event.type == pygame.KEYDOWN: # 키보드를 눌렀을 때
+        map.post_map = map.map      # 되돌리기를 위한 맵 저장
         if event.key == pygame.K_UP: # up이면
           map.moveUp()
 
@@ -452,7 +458,13 @@ while running:
             if effect:
               button_sound.play()
             option = True
+          elif undo_button.collidepoint(click_pos):     # 언두버튼을 눌렀을 때
+            if map.post_map != []:  # 이전 행동이 저장되어 있을 때
+              if effect:
+                button_sound.play()
+              map.undo()            # 언두 실행
 
+     
   else: # default로 시자화면 출력
     display_start_screen()
 
