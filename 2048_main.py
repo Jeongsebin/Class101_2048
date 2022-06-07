@@ -44,6 +44,7 @@ class Map:
         if v != 0:
           if v == last:
             b.append(b.pop() << 1)
+            self.post_score = self.score #점수 변하기 전에 저장(for undo)
             self.score += v * 2 # 합쳐서 만들어진 숫자만큼 점수 추가
             last = 0
           else:
