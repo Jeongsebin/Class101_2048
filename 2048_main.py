@@ -198,7 +198,7 @@ def display_rank_screen(): # 랭킹화면
       name = myFont.render(rankinglist[i][0], True, BLACK)
       score = myFont.render(rankinglist[i][1], True, BLACK)
 
-      screen.blit(name, [210, y])
+      screen.blit(name, [180, y])
       screen.blit(score, [340, y])
       y += 68
   
