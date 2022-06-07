@@ -44,6 +44,7 @@ class Map:
         if v != 0:
           if v == last:
             b.append(b.pop() << 1)
+            self.post_score = self.score #점수 변하기 전에 저장(for undo)
             self.score += v * 2 # 합쳐서 만들어진 숫자만큼 점수 추가
             last = 0
           else:
@@ -198,7 +199,7 @@ def display_rank_screen(): # 랭킹화면
       name = myFont.render(rankinglist[i][0], True, BLACK)
       score = myFont.render(rankinglist[i][1], True, BLACK)
 
-      screen.blit(name, [210, y])
+      screen.blit(name, [180, y])
       screen.blit(score, [340, y])
       y += 68
   
@@ -208,7 +209,7 @@ def display_rank_screen(): # 랭킹화면
 def display_game_over():
   pygame.display.set_caption("GAME OVER")
   global click_button 
-  background = pygame.image.load("game_over.png") # 게임오버 배경이미지 로드
+  background = pygame.image.load("game_over.jpg") # 게임오버 배경이미지 로드
   screen.blit(background, (0,0)) # 게임오버 배경 이미지 적용
   score_font = pygame.font.Font(None, 40)
   score = score_font.render(str(map.score), True, (0,0,0))
