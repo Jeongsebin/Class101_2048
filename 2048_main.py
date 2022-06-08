@@ -233,8 +233,16 @@ def display_option_screen():
   global bgm_button
   global sound_button
   global restart_button
-  background = pygame.image.load("option.png") # 옵션 배경이미지 로드
+  if bsound and effect:
+    background = pygame.image.load("option.png") # 옵션 배경이미지 로드
+  elif bsound and effect == False:
+    background = pygame.image.load("no_effect.png") # 옵션 배경이미지 로드
+  elif bsound == False and effect:
+    background = pygame.image.load("no_bgm.png") # 옵션 배경이미지 로드
+  else:
+    background = pygame.image.load("no_all.png") # 옵션 배경이미지 로드
   screen.blit(background, (0,0)) # 옵션 배경 이미지 적용
+
 
   sound_button = pygame.Rect(130,216,94,94)
   bgm_button = pygame.Rect(316, 216, 94, 94)
