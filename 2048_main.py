@@ -233,8 +233,16 @@ def display_option_screen():
   global bgm_button
   global sound_button
   global restart_button
-  background = pygame.image.load("option.png") # 옵션 배경이미지 로드
+  if bsound and effect:
+    background = pygame.image.load("option.png") # 옵션 배경이미지 로드
+  elif bsound and effect == False:
+    background = pygame.image.load("no_effect.png") # 옵션 배경이미지 로드
+  elif bsound == False and effect:
+    background = pygame.image.load("no_bgm.png") # 옵션 배경이미지 로드
+  else:
+    background = pygame.image.load("no_all.png") # 옵션 배경이미지 로드
   screen.blit(background, (0,0)) # 옵션 배경 이미지 적용
+
 
   sound_button = pygame.Rect(130,216,94,94)
   bgm_button = pygame.Rect(316, 216, 94, 94)
@@ -322,12 +330,15 @@ effect = True
 while running:
   click_pos = None # 클릭 좌표
   clock.tick(10)# 속도 조절
+  get_press = None
 
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       running = False
     elif event.type == pygame.MOUSEBUTTONUP: # 마우스 버튼 클릭하면
       click_pos = pygame.mouse.get_pos() # 마우스 좌표를 click_pos에 저장
+    elif event.type == pygame.KEYDOWN:
+      get_press = pygame.key.get_pressed()
 
   if click_pos:
     if start_button.collidepoint(click_pos): # 시작 버튼을 누르면 start를 True로
@@ -353,8 +364,7 @@ while running:
             pygame.mixer.music.unpause()
             bsound = True
       
-      if click_pos:
-        if sound_button.collidepoint(click_pos):
+        elif sound_button.collidepoint(click_pos):
           if effect:
             effect = False
           else:
@@ -367,9 +377,7 @@ while running:
           if effect:
             button_sound.play()
           option = False
-
-      if click_pos: # 옵션 화면에서 옵션 quit버튼을 누르면 옵션을 False로
-        if restart_button.collidepoint(click_pos):
+        elif restart_button.collidepoint(click_pos):
           if effect:
             button_sound.play()
           map = Map()
@@ -378,18 +386,21 @@ while running:
     else: # 옵션 화면이 아니라면 게임 화면
       display_game_screen()
       map.create_block() # 블럭 두개 생성
-      if event.type == pygame.KEYDOWN: # 키보드를 눌렀을 때
-        map.post_map = map.map      # 되돌리기를 위한 맵 저장
-        if event.key == pygame.K_UP: # up이면
+      if get_press:
+        if get_press[pygame.K_UP] : # up이면
+          map.post_map = map.map      # 되돌리기를 위한 맵 저장
           map.moveUp()
 
-        elif event.key == pygame.K_DOWN: # down이면
+        elif get_press[pygame.K_DOWN]: # down이면
+          map.post_map = map.map      # 되돌리기를 위한 맵 저장
           map.moveDown()         
 
-        elif event.key == pygame.K_LEFT: # left로 이동 이면
+        elif get_press[pygame.K_LEFT]: # left로 이동 이면
+          map.post_map = map.map      # 되돌리기를 위한 맵 저장
           map.moveLeft()         
 
-        elif event.key == pygame.K_RIGHT: #right로 이동이면
+        elif get_press[pygame.K_RIGHT]: #right로 이동이면
+          map.post_map = map.map      # 되돌리기를 위한 맵 저장
           map.moveRight()  
           
 
@@ -404,9 +415,7 @@ while running:
                     button_sound.play()
                   rank = False
                   start = False
-              
-              if click_pos:
-                if rank_restart_button.collidepoint(click_pos):
+                elif rank_restart_button.collidepoint(click_pos):
                   if effect:
                     button_sound.play()
 
@@ -440,8 +449,7 @@ while running:
               rank = False
               start = False
 
-          if click_pos:
-            if rank_restart_button.collidepoint(click_pos):
+            elif rank_restart_button.collidepoint(click_pos):
               if effect:
                 button_sound.play()
 
